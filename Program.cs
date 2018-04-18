@@ -8,8 +8,6 @@ namespace cmiConnectDotNet
 {
     class Program
     {
-        
-
         static void Main(string[] args)
         {
             if(args.Length < 2) {
@@ -20,6 +18,7 @@ namespace cmiConnectDotNet
             Connector connector = new Connector();
             connector.Referer = args[0];
             Console.WriteLine("password required:");
+
             String password = "";
             ConsoleKeyInfo key;
             do
@@ -92,15 +91,18 @@ namespace cmiConnectDotNet
             var client = (HttpWebRequest)WebRequest.Create(new Uri(url));
             client.Accept = "application/json";
             client.ContentType = "application/x-www-form-urlencoded";
+            client.UserAgent = @"Mozilla/5.0";
             client.Method = "POST";
             client.Headers.Add("X-Requested-With","XMLHttpRequest");
-            client.Headers.Add("Referer", Referer);
+            client.Headers.Add("Referer", "https://" + Referer + "/");
             client.Headers.Add("X-CSRFToken", CsrfToken);
-            client.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+            client.Headers.Add("Accept-Language", "fr-FR,en,*");
+            client.Headers.Add("Accept-Encoding", "gzip, deflate");
             client.CookieContainer = cookieContainer;
 
             var vm = new { email = email, password = password, csrftoken = CsrfToken };
             var dataString = JsonConvert.SerializeObject(vm);
+            //var dataString = "email=" + email + "&password=" + password + "&csrfmiddlewaretoken=" + CsrfToken;
             ASCIIEncoding encoding = new ASCIIEncoding();
             Byte[] bytes = encoding.GetBytes(dataString);
             
@@ -109,7 +111,6 @@ namespace cmiConnectDotNet
             newStream.Close();
             try {
                 var response = client.GetResponse();
-
                 var stream = response.GetResponseStream();
                 var sr = new StreamReader(stream);
                 var content = sr.ReadToEnd();
